@@ -43,10 +43,9 @@ class MainWindow(QMainWindow):
         self.BUY_MIN_GERERYANG = 0
         self.BUY_PROFIT_PERCENT = 300
         self.SEC_WAIT_SELL_AFTER_BUY = 30
-        self.BUY_MINIMUM_COST_WON = self.BUY_MINIMUM_COST_MANWON * 10000
+        # self.BUY_MINIMUM_COST_WON = self.BUY_MINIMUM_COST_MANWON * 10000
 
         # self.GLOBAL_LIST = []
-        self.GLOBAL_QUEUE = Queue()
 
         self.openOptionFile()
         self.MYSTOCK = MyStock(self)
@@ -106,7 +105,7 @@ class MainWindow(QMainWindow):
     def setupUI(self):
         # Main Window
         self.setWindowTitle("StockVI")
-        self.setGeometry(50, 50, 1450, 800)
+        self.setGeometry(50, 50, 1550, 800)
         self.setCentralWidget(self.mainLayout())
 
     def curTime(self):
@@ -225,8 +224,8 @@ class MainWindow(QMainWindow):
         for j in range(self.tableWidget.columnCount()):
             self.tableWidget.item(row_index, j).setBackground(color)
         # self.tableWidget.resizeRowsToContents()
-        QApplication.processEvents()
-        QCoreApplication.processEvents()
+        # QApplication.processEvents()
+        # QCoreApplication.processEvents()
 
     def setColorEmptyRow(self, row_index, color):
         for j in range(self.tableWidget.columnCount()):
@@ -355,7 +354,7 @@ class MainWindow(QMainWindow):
         # self.newsgroupbox.setStyleSheet("QGroupBox{padding-top:15px; margin-top:-15px}")
         self.tableWidget = QTableWidget(self)
         self.tableWidget.setMinimumHeight(200)
-        self.tableWidget.setColumnCount(24)
+        self.tableWidget.setColumnCount(25)
         self.tableWidget.verticalHeader().setSectionResizeMode(QHeaderView.Fixed)
         self.tableWidget.verticalHeader().setDefaultSectionSize(12)
         self.tableWidget.setEditTriggers(QAbstractItemView.NoEditTriggers)
@@ -363,7 +362,7 @@ class MainWindow(QMainWindow):
         # self.tableWidget.setStyleSheet('disabled{ background-color:rgb(%s,%s,%s);color:rgb(%s,%s,%s)}' % (255, 0, 0, 255, 0, 0))
         # column_headers = ['시간', '코드', '종목명', '보고서', '영업이익', '영업이익-1Y', '증감(%)'] #, '매출액', '매출액-1Y', '증감(%)', '-1Y당기순이익', '당기순이익', '증감(%)']
         column_headers = ['코드', '종목명', '시가대비\n등락률', '기준가격\n동적VI', '기준가격\n정적VI', '거래량', '발동', '해지', '발동가격', '호가',
-                          '횟수', '주문번호', '수량', '미체결', '매수가', '매도가', '현재가', '평가손익', '수익률', '상태', '매수', '매도', '매도', '오토']
+                          '횟수', '주문번호', '수량', '미체결', '매수가', '매도가', '현재가', '평가손익', '수익률', '상태', '금액(만)', '매수', '매도', '매도', '오토']
         self.tableWidget.setHorizontalHeaderLabels(column_headers)
         self.tableWidget.verticalHeader().setVisible(True)
         #self.tableWidget.resizeColumnsToContents()
@@ -389,10 +388,11 @@ class MainWindow(QMainWindow):
         self.COL_PROFIT_PRICE = 17
         self.COL_PROFIT_PERCENT = 18
         self.COL_STATUS = 19
-        self.COL_BTN_MESU = 20
-        self.COL_BTN_MEDO30 = 21
-        self.COL_BTN_MEDO100 = 22
-        self.COL_BTN_AUTO = 23
+        self.COL_WON_TO_BUY = 20
+        self.COL_BTN_MESU = 21
+        self.COL_BTN_MEDO30 = 22
+        self.COL_BTN_MEDO100 = 23
+        self.COL_BTN_AUTO = 24
 
         delegate = AlignDelegate(self.tableWidget)
         self.tableWidget.setItemDelegateForColumn(self.COL_CODE, delegate)
@@ -415,12 +415,13 @@ class MainWindow(QMainWindow):
         self.tableWidget.setItemDelegateForColumn(self.COL_PROFIT_PRICE, delegate)
         self.tableWidget.setItemDelegateForColumn(self.COL_PROFIT_PERCENT, delegate)
         self.tableWidget.setItemDelegateForColumn(self.COL_STATUS, delegate)
+        self.tableWidget.setItemDelegateForColumn(self.COL_WON_TO_BUY, delegate)
         self.tableWidget.setItemDelegateForColumn(self.COL_BTN_MESU, delegate)
         self.tableWidget.setItemDelegateForColumn(self.COL_BTN_MEDO30, delegate)
         self.tableWidget.setItemDelegateForColumn(self.COL_BTN_MEDO100, delegate)
         self.tableWidget.setItemDelegateForColumn(self.COL_BTN_AUTO, delegate)
         self.tableWidget.setColumnWidth(self.COL_CODE, 50)
-        self.tableWidget.setColumnWidth(self.COL_NAME, 80)
+        self.tableWidget.setColumnWidth(self.COL_NAME, 100)
         self.tableWidget.setColumnWidth(self.COL_SIGA_PERCENT, 60)
         self.tableWidget.setColumnWidth(self.COL_PRICE_DONGJEOK, 60)
         self.tableWidget.setColumnWidth(self.COL_PRICE_JUNGJEOK, 60)
@@ -439,6 +440,7 @@ class MainWindow(QMainWindow):
         self.tableWidget.setColumnWidth(self.COL_PROFIT_PRICE, 60)
         self.tableWidget.setColumnWidth(self.COL_PROFIT_PERCENT, 50)
         self.tableWidget.setColumnWidth(self.COL_STATUS, 60)
+        self.tableWidget.setColumnWidth(self.COL_WON_TO_BUY, 60)
         self.tableWidget.setColumnWidth(self.COL_BTN_MESU, 40)
         self.tableWidget.setColumnWidth(self.COL_BTN_MEDO30, 40)
         self.tableWidget.setColumnWidth(self.COL_BTN_MEDO100, 40)
@@ -578,8 +580,8 @@ class MainWindow(QMainWindow):
 
     def minBuyChanged(self):
         self.BUY_MINIMUM_COST_MANWON = int(self.spinboxMinBuyValue.value())
-        self.BUY_MINIMUM_COST_WON = self.BUY_MINIMUM_COST_MANWON * 10000
-        print(f'{common.getCurDateTime()}_[{self.NAME}][minBuyChanged] {self.BUY_MINIMUM_COST_WON} {type(self.BUY_MINIMUM_COST_WON)}')
+        # self.BUY_MINIMUM_COST_WON = self.BUY_MINIMUM_COST_MANWON * 10000
+        # print(f'{common.getCurDateTime()}_[{self.NAME}][minBuyChanged] {self.BUY_MINIMUM_COST_WON} {type(self.BUY_MINIMUM_COST_WON)}')
         self.saveOptionFile()
 
     def secWaitChanged(self):
@@ -679,7 +681,7 @@ class MainWindow(QMainWindow):
             self.tableWidget.removeRow(row)
         self.tableWidget.setEditTriggers(QAbstractItemView.NoEditTriggers)
         column_headers = ['코드', '종목명', '시가대비\n등락률', '기준가격\n동적VI', '기준가격\n정적VI', '거래량', '발동', '해지', '발동가격', '호가',
-                          '횟수', '주문번호', '수량', '미체결', '매수가', '매도가', '현재가', '평가손익', '수익률', '상태', '매수', '매도', '매도', '오토']
+                          '횟수', '주문번호', '수량', '미체결', '매수가', '매도가', '현재가', '평가손익', '수익률', '상태', '금액(만)', '매수', '매도', '매도', '오토']
         self.tableWidget.setHorizontalHeaderLabels(column_headers)
         self.tableWidget.verticalHeader().setVisible(True)
         self.KIWOOM.get_account_evaluation_balance()
@@ -717,6 +719,17 @@ class MainWindow(QMainWindow):
                     button.setStyleSheet('background-color:rgb(%s,%s,%s);color:rgb(%s,%s,%s)' % (0, 200, 0, 255, 255, 255))
                 # self.tableWidget.setCellWidget(item.row(), 22, tempitem)
 
+    def spintoBuyClicked(self):
+        value = self.spinboxToBuy.value()
+        button = QtWidgets.qApp.focusWidget()
+        item = self.tableWidget.indexAt(button.pos())
+        print(f'{common.getCurDateTime()}_[{self.NAME}][spintoBuyClicked] button.pos(): {button.pos()}, value: {value} {type(value)}')
+        code = self.tableWidget.item(item.row(), self.COL_CODE).text()
+        for stock in self.MYSTOCK.my_stocks:
+            if stock.stock_code == code:
+                stock.n_won_to_buy = value
+                print(f'{common.getCurDateTime()}_[{self.NAME}][spintoBuyClicked] code: {code}, n_won_to_buy changed to: {value} {type(value)}')
+
     def buyClicked(self):
         button = QtWidgets.qApp.focusWidget()
         item = self.tableWidget.indexAt(button.pos())
@@ -724,8 +737,11 @@ class MainWindow(QMainWindow):
         cur_quantity = int(self.tableWidget.item(item.row(), self.COL_COUNT_BOUGHT).text())
         status = self.tableWidget.item(item.row(), self.COL_STATUS).text()
         hoga = common.convertStringMoneyToInt(self.tableWidget.item(item.row(), self.COL_HOGA).text().split('(')[0])
+        minimum_manwon = int(self.tableWidget.item(item.row(), self.COL_WON_TO_BUY).text())
+        minimum_won = minimum_manwon * 10000
+        print(f'{common.getCurDateTime()}_[{self.NAME}][buyClicked] minimum_manwon: {minimum_manwon}, minimum_won: {minimum_won}')
         try:
-            to_buy = trunc(int(self.BUY_MINIMUM_COST_WON / hoga)) - 1
+            to_buy = trunc(int(minimum_won / hoga)) - 1
         except:
             to_buy = 0
         try:
@@ -746,6 +762,10 @@ class MainWindow(QMainWindow):
             print(f'{common.getCurDateTime()}_[{self.NAME}][buyClicked] buy:', code, 'quantity', cur_quantity)
             if code != '-':
                 self.KIWOOM.stock_buy_more(code, to_buy, self.buy_sell_screen_no)
+                for stock in self.MYSTOCK.my_stocks:
+                    if stock.stock_code == code:
+                        stock.firstbuytime = time.time()
+                        stock.n_BUY_DONE = True
                 button.setText('취소')
                 button.setStyleSheet('background-color:rgb(%s,%s,%s);color:rgb(%s,%s,%s)' % (200, 200, 0, 255, 255, 255))
                 self.KIWOOM.addRealTimeRegCode(code)
@@ -819,6 +839,9 @@ class MainWindow(QMainWindow):
 if __name__ == "__main__":
     multiprocessing.freeze_support()
     app = QApplication(sys.argv)
+
+    GLOBAL_DATA_QUEUE = Queue()
+    GLOBAL_ORDER_QUEUE = Queue()
 
     mainWindow = MainWindow()
     mainWindow.show()

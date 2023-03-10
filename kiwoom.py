@@ -84,14 +84,14 @@ class KiwoomAPI:
     def startRealtimeMonitor(self):
         codelist = self.getRealTimeRegCode()
         if codelist != '':
-            if len(self.realtime_register_code) == 1:
-                print(f'{common.getCurDateTime()}_[{self.name}][키움 실시간감시 시작][최초] codelist:', codelist, 'self.screenNo_real:', self.screenNo_real)
-                self.kiwoom.dynamicCall("SetRealReg(QString, QString, QString, QString)", self.screenNo_real, codelist,
-                                        '10;11;12;27;28;311;41;61;45;65;50;70;9001;302;9068;1224;1225;9069', 0)
-            else:
-                print(f'{common.getCurDateTime()}_[{self.name}][키움 실시간감시 시작][추가] codelist:', codelist, 'self.screenNo_real:', self.screenNo_real)
-                self.kiwoom.dynamicCall("SetRealReg(QString, QString, QString, QString)", self.screenNo_real, codelist,
-                                        '10;11;12;27;28;311;41;61;45;65;50;70;9001;302;9068;1224;1225;9069', 1)
+            # if len(self.realtime_register_code) == 1:
+            print(f'{common.getCurDateTime()}_[{self.name}][키움 실시간감시 시작][최초] codelist:', codelist, 'self.screenNo_real:', self.screenNo_real)
+            self.kiwoom.dynamicCall("SetRealReg(QString, QString, QString, QString)", self.screenNo_real, codelist,
+                                    '10;11;12;27;28;311;41;61;45;65;50;70;9001;302;9068;1224;1225;9069', 0)
+            # else:
+            #     print(f'{common.getCurDateTime()}_[{self.name}][키움 실시간감시 시작][추가] codelist:', codelist, 'self.screenNo_real:', self.screenNo_real)
+            #     self.kiwoom.dynamicCall("SetRealReg(QString, QString, QString, QString)", self.screenNo_real, codelist,
+            #                             '10;11;12;27;28;311;41;61;45;65;50;70;9001;302;9068;1224;1225;9069', 1)
 
     def stopRealtimeMonitor(self, stockcode, all):
         print(f'{common.getCurDateTime()}_[{self.name}][키움 실시간감시 중지] all: {all}, stockcode: {stockcode}')
@@ -227,7 +227,9 @@ class KiwoomAPI:
                                 if buy:
                                     print(f'{common.getCurDateTime()}_[{self.name}][receive_realdata][매수콜] 거래량: {self.caller.MYSTOCK.my_stocks[idx].n_gererayng}, 매도호가: {first_medo_hoga}, > VI발동가: {self.caller.MYSTOCK.my_stocks[idx].n_baldongprice}')
                                     self.caller.MYSTOCK.my_stocks[idx].n_BUY_DONE = True
-                                    count_to_buy = trunc(int(self.caller.BUY_MINIMUM_COST_WON / common.convertStringMoneyToInt(first_medo_hoga)))
+                                    minimum_manwon = self.caller.MYSTOCK.my_stocks[idx].n_won_to_buy;
+                                    minimum_won = minimum_manwon * 10000
+                                    count_to_buy = trunc(int(minimum_won / common.convertStringMoneyToInt(first_medo_hoga)))
                                     self.new_stock_buy(self.name, self.caller.kospi_dic_by_code_main.get(code, '-'), code, count_to_buy)
                                     self.caller.PlaySoundEffect("sound_buy.mp3")
                     else:
@@ -290,92 +292,100 @@ class KiwoomAPI:
                     break
             # 신규
             if is_new_news is True:
-                # self.news_count_all += 1
-                new_News = StockModel(code, codename, baldongprice, sigapercent, dongjeokprice, jeongjeokprice, gererayng, memetime, virelease, vibaldongcount, vigubun, vipoint, vitype)
-                self.caller.MYSTOCK.my_stocks.insert(0, new_News)
-                print(f'{common.getCurDateTime()}_[{self.name}][receive_realdata][VI발동/해제][신규] 코드: {code}, 종목: {codename}, VI발동구분: {vigubun}, {type(vigubun)}, VI발동방향구분: {vipoint}, VI해제시각: {virelease}, VI적용구분: {vitype}')
-                # 실시간등록
-                self.addRealTimeRegCode(code)
-                self.startRealtimeMonitor()
-                row = 0
-                self.caller.tableWidget.insertRow(row)
-                self.caller.tableWidget.setItem(row, self.caller.COL_CODE, QTableWidgetItem(new_News.n_code))
-                self.caller.tableWidget.setItem(row, self.caller.COL_NAME, QTableWidgetItem(new_News.n_codename))
-
-                item = QTableWidgetItem(new_News.n_sigapercent)
-                if new_News.n_sigapercent[0] == '+':
-                    item.setForeground(QtGui.QColor(250, 50, 0, 250))
-                    item.setBackground(QtGui.QColor(250, 0, 0, 25))
+                if '선물' in codename or '옵션' in codename or 'ETA' in codename or 'ETF' in codename or 'ETN' in codename:
+                    pass
                 else:
-                    item.setForeground(QtGui.QColor(0, 50, 250, 250))
-                    item.setBackground(QtGui.QColor(0, 0, 250, 25))
-                self.caller.tableWidget.setItem(row, self.caller.COL_SIGA_PERCENT, item)
+                    new_News = StockModel(code, codename, baldongprice, sigapercent, dongjeokprice, jeongjeokprice, gererayng, memetime, virelease, vibaldongcount, vigubun, vipoint, vitype, self.caller.BUY_MINIMUM_COST_MANWON)
+                    self.caller.MYSTOCK.my_stocks.insert(0, new_News)
+                    print(f'{common.getCurDateTime()}_[{self.name}][receive_realdata][VI발동/해제][신규] 코드: {code}, 종목: {codename}, VI발동구분: {vigubun}, {type(vigubun)}, VI발동방향구분: {vipoint}, VI해제시각: {virelease}, VI적용구분: {vitype}')
+                    # 실시간등록
+                    self.addRealTimeRegCode(code)
+                    self.startRealtimeMonitor()
+                    row = 0
+                    self.caller.tableWidget.insertRow(row)
+                    self.caller.tableWidget.setItem(row, self.caller.COL_CODE, QTableWidgetItem(new_News.n_code))
+                    self.caller.tableWidget.setItem(row, self.caller.COL_NAME, QTableWidgetItem(new_News.n_codename))
 
-                item = QTableWidgetItem(new_News.n_dongjeokprice)
-                if int(new_News.n_dongjeokprice) > 0:
-                    item.setForeground(QtGui.QColor(250, 50, 0, 250))
-                    item.setBackground(QtGui.QColor(250, 0, 0, 25))
-                elif int(new_News.n_dongjeokprice) < 0:
-                    item.setForeground(QtGui.QColor(0, 50, 250, 250))
-                    item.setBackground(QtGui.QColor(0, 0, 250, 25))
-                self.caller.tableWidget.setItem(row, self.caller.COL_PRICE_DONGJEOK, item)
+                    item = QTableWidgetItem(new_News.n_sigapercent)
+                    if new_News.n_sigapercent[0] == '+':
+                        item.setForeground(QtGui.QColor(250, 50, 0, 250))
+                        item.setBackground(QtGui.QColor(250, 0, 0, 25))
+                    else:
+                        item.setForeground(QtGui.QColor(0, 50, 250, 250))
+                        item.setBackground(QtGui.QColor(0, 0, 250, 25))
+                    self.caller.tableWidget.setItem(row, self.caller.COL_SIGA_PERCENT, item)
 
-                item = QTableWidgetItem(new_News.n_jeongjeokprice)
-                if int(new_News.n_jeongjeokprice) > 0:
-                    item.setForeground(QtGui.QColor(250, 50, 0, 250))
-                    item.setBackground(QtGui.QColor(250, 0, 0, 25))
-                elif int(new_News.n_jeongjeokprice) < 0:
-                    item.setForeground(QtGui.QColor(0, 50, 250, 250))
-                    item.setBackground(QtGui.QColor(0, 0, 250, 25))
-                self.caller.tableWidget.setItem(row, self.caller.COL_PRICE_JUNGJEOK, item)
+                    item = QTableWidgetItem(new_News.n_dongjeokprice)
+                    if int(new_News.n_dongjeokprice) > 0:
+                        item.setForeground(QtGui.QColor(250, 50, 0, 250))
+                        item.setBackground(QtGui.QColor(250, 0, 0, 25))
+                    elif int(new_News.n_dongjeokprice) < 0:
+                        item.setForeground(QtGui.QColor(0, 50, 250, 250))
+                        item.setBackground(QtGui.QColor(0, 0, 250, 25))
+                    self.caller.tableWidget.setItem(row, self.caller.COL_PRICE_DONGJEOK, item)
 
-                self.caller.tableWidget.setItem(row, self.caller.COL_GERRERAYNG, QTableWidgetItem(new_News.n_gererayng))
-                self.caller.tableWidget.setItem(row, self.caller.COL_BALDONG_TIME, QTableWidgetItem(new_News.n_memetime))
-                self.caller.tableWidget.setItem(row, self.caller.COL_HEJI_TIME, QTableWidgetItem(new_News.n_virelease))
+                    item = QTableWidgetItem(new_News.n_jeongjeokprice)
+                    if int(new_News.n_jeongjeokprice) > 0:
+                        item.setForeground(QtGui.QColor(250, 50, 0, 250))
+                        item.setBackground(QtGui.QColor(250, 0, 0, 25))
+                    elif int(new_News.n_jeongjeokprice) < 0:
+                        item.setForeground(QtGui.QColor(0, 50, 250, 250))
+                        item.setBackground(QtGui.QColor(0, 0, 250, 25))
+                    self.caller.tableWidget.setItem(row, self.caller.COL_PRICE_JUNGJEOK, item)
 
-                self.caller.tableWidget.setItem(row, self.caller.COL_BALDONG_PRICE, QTableWidgetItem(new_News.n_baldongprice))
-                self.caller.tableWidget.setItem(row, self.caller.COL_HOGA, QTableWidgetItem('0'))
-                self.caller.tableWidget.setItem(row, self.caller.COL_VI_COUNT, QTableWidgetItem(new_News.n_vibaldongcount))
-                self.caller.tableWidget.setItem(row, self.caller.COL_ORDERNUM, QTableWidgetItem('-'))
-                self.caller.tableWidget.setItem(row, self.caller.COL_COUNT_BOUGHT, QTableWidgetItem('0'))
-                self.caller.tableWidget.setItem(row, self.caller.COL_COUNT_NOTYET, QTableWidgetItem('0'))
-                self.caller.tableWidget.setItem(row, self.caller.COL_BUY_PRICE, QTableWidgetItem('0'))
-                self.caller.tableWidget.setItem(row, self.caller.COL_SELL_PRICE, QTableWidgetItem('0'))
-                self.caller.tableWidget.setItem(row, self.caller.COL_CUR_PRICE, QTableWidgetItem('0'))
-                self.caller.tableWidget.setItem(row, self.caller.COL_PROFIT_PRICE, QTableWidgetItem('0'))
-                self.caller.tableWidget.setItem(row, self.caller.COL_PROFIT_PERCENT, QTableWidgetItem('0'))
-                self.caller.tableWidget.setItem(row, self.caller.COL_STATUS, QTableWidgetItem('VI발동'))
+                    self.caller.tableWidget.setItem(row, self.caller.COL_GERRERAYNG, QTableWidgetItem(new_News.n_gererayng))
+                    self.caller.tableWidget.setItem(row, self.caller.COL_BALDONG_TIME, QTableWidgetItem(new_News.n_memetime))
+                    self.caller.tableWidget.setItem(row, self.caller.COL_HEJI_TIME, QTableWidgetItem(new_News.n_virelease))
 
-                self.caller.buyBtn = QPushButton("매수")
-                self.caller.buyBtn.clicked.connect(self.caller.buyClicked)
-                self.caller.buyBtn.setStyleSheet('background-color:rgb(%s,%s,%s);color:rgb(%s,%s,%s)' % (250, 50, 0, 255, 255, 255))
-                self.caller.tableWidget.setCellWidget(row, self.caller.COL_BTN_MESU, self.caller.buyBtn)
+                    self.caller.tableWidget.setItem(row, self.caller.COL_BALDONG_PRICE, QTableWidgetItem(new_News.n_baldongprice))
+                    self.caller.tableWidget.setItem(row, self.caller.COL_HOGA, QTableWidgetItem('0'))
+                    self.caller.tableWidget.setItem(row, self.caller.COL_VI_COUNT, QTableWidgetItem(new_News.n_vibaldongcount))
+                    self.caller.tableWidget.setItem(row, self.caller.COL_ORDERNUM, QTableWidgetItem('-'))
+                    self.caller.tableWidget.setItem(row, self.caller.COL_COUNT_BOUGHT, QTableWidgetItem('0'))
+                    self.caller.tableWidget.setItem(row, self.caller.COL_COUNT_NOTYET, QTableWidgetItem('0'))
+                    self.caller.tableWidget.setItem(row, self.caller.COL_BUY_PRICE, QTableWidgetItem('0'))
+                    self.caller.tableWidget.setItem(row, self.caller.COL_SELL_PRICE, QTableWidgetItem('0'))
+                    self.caller.tableWidget.setItem(row, self.caller.COL_CUR_PRICE, QTableWidgetItem('0'))
+                    self.caller.tableWidget.setItem(row, self.caller.COL_PROFIT_PRICE, QTableWidgetItem('0'))
+                    self.caller.tableWidget.setItem(row, self.caller.COL_PROFIT_PERCENT, QTableWidgetItem('0'))
+                    self.caller.tableWidget.setItem(row, self.caller.COL_STATUS, QTableWidgetItem('VI발동'))
 
-                self.caller.sell30Btn = QPushButton("30%")
-                self.caller.sell30Btn.clicked.connect(self.caller.sell30Clicked)
-                self.caller.sell30Btn.setStyleSheet('background-color:rgb(%s,%s,%s);color:rgb(%s,%s,%s)' % (0, 50, 200, 255, 255, 255))
-                self.caller.tableWidget.setCellWidget(row, self.caller.COL_BTN_MEDO30, self.caller.sell30Btn)
+                    self.caller.buyBtn = QPushButton("매수")
+                    self.caller.buyBtn.clicked.connect(self.caller.buyClicked)
+                    self.caller.buyBtn.setStyleSheet('background-color:rgb(%s,%s,%s);color:rgb(%s,%s,%s)' % (250, 50, 0, 255, 255, 255))
+                    self.caller.tableWidget.setCellWidget(row, self.caller.COL_BTN_MESU, self.caller.buyBtn)
 
-                self.caller.sellAllBtn = QPushButton("100%")
-                self.caller.sellAllBtn.clicked.connect(self.caller.sellAllClicked)
-                self.caller.sellAllBtn.setStyleSheet('background-color:rgb(%s,%s,%s);color:rgb(%s,%s,%s)' % (0, 50, 250, 255, 255, 255))
-                self.caller.tableWidget.setCellWidget(row, self.caller.COL_BTN_MEDO100, self.caller.sellAllBtn)
+                    self.caller.sell30Btn = QPushButton("30%")
+                    self.caller.sell30Btn.clicked.connect(self.caller.sell30Clicked)
+                    self.caller.sell30Btn.setStyleSheet('background-color:rgb(%s,%s,%s);color:rgb(%s,%s,%s)' % (0, 50, 200, 255, 255, 255))
+                    self.caller.tableWidget.setCellWidget(row, self.caller.COL_BTN_MEDO30, self.caller.sell30Btn)
 
-                if new_News.ALLOW_AUTO_BUYSELL:
-                    self.caller.authBtn = QPushButton("오토")
-                    self.caller.authBtn.clicked.connect(self.caller.autoClicked)
-                    self.caller.authBtn.setStyleSheet('background-color:rgb(%s,%s,%s);color:rgb(%s,%s,%s)' % (0, 200, 0, 255, 255, 255))
-                    self.caller.tableWidget.setCellWidget(row, self.caller.COL_BTN_AUTO, self.caller.authBtn)
-                else:
-                    self.caller.authBtn = QPushButton("중지")
-                    self.caller.authBtn.clicked.connect(self.caller.autoClicked)
-                    self.caller.authBtn.setStyleSheet('background-color:rgb(%s,%s,%s);color:rgb(%s,%s,%s)' % (0, 0, 0, 255, 255, 255))
-                    self.caller.tableWidget.setCellWidget(row, self.caller.COL_BTN_AUTO, self.caller.authBtn)
+                    self.caller.sellAllBtn = QPushButton("100%")
+                    self.caller.sellAllBtn.clicked.connect(self.caller.sellAllClicked)
+                    self.caller.sellAllBtn.setStyleSheet('background-color:rgb(%s,%s,%s);color:rgb(%s,%s,%s)' % (0, 50, 250, 255, 255, 255))
+                    self.caller.tableWidget.setCellWidget(row, self.caller.COL_BTN_MEDO100, self.caller.sellAllBtn)
 
-                self.caller.tableWidget.scrollToTop()
-                self.caller.tableWidget.resizeRowsToContents()
+                    if vipoint == 2:
+                        new_News.ALLOW_AUTO_BUYSELL = False
+                        self.caller.authBtn = QPushButton("중지")
+                        self.caller.authBtn.clicked.connect(self.caller.autoClicked)
+                        self.caller.authBtn.setStyleSheet('background-color:rgb(%s,%s,%s);color:rgb(%s,%s,%s)' % (0, 0, 0, 255, 255, 255))
+                        self.caller.tableWidget.setCellWidget(row, self.caller.COL_BTN_AUTO, self.caller.authBtn)
+                    elif new_News.ALLOW_AUTO_BUYSELL:
+                        self.caller.authBtn = QPushButton("오토")
+                        self.caller.authBtn.clicked.connect(self.caller.autoClicked)
+                        self.caller.authBtn.setStyleSheet('background-color:rgb(%s,%s,%s);color:rgb(%s,%s,%s)' % (0, 200, 0, 255, 255, 255))
+                        self.caller.tableWidget.setCellWidget(row, self.caller.COL_BTN_AUTO, self.caller.authBtn)
+                    else:
+                        self.caller.authBtn = QPushButton("중지")
+                        self.caller.authBtn.clicked.connect(self.caller.autoClicked)
+                        self.caller.authBtn.setStyleSheet('background-color:rgb(%s,%s,%s);color:rgb(%s,%s,%s)' % (0, 0, 0, 255, 255, 255))
+                        self.caller.tableWidget.setCellWidget(row, self.caller.COL_BTN_AUTO, self.caller.authBtn)
 
-                self.caller.PlaySoundEffect("sound_vi_start.wav")
+                    self.caller.tableWidget.scrollToTop()
+                    # self.caller.tableWidget.resizeRowsToContents()
+
+                    self.caller.PlaySoundEffect("sound_vi_start.wav")
 
             else:
                 self.caller.PlaySoundEffect("sound_vi_end.wav")

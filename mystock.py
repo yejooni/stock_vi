@@ -1,7 +1,7 @@
 import time
 from math import trunc
 from PyQt5 import QtGui
-from PyQt5.QtWidgets import QTableWidgetItem, QPushButton
+from PyQt5.QtWidgets import QTableWidgetItem, QPushButton, QDoubleSpinBox
 
 import common
 from stock_model import StockModel
@@ -17,7 +17,7 @@ class MyStock:
 
     # 계좌평가잔고내역요청
     def add_stock_from_account(self, stock_code, stock_name, stock_quantity, stock_buy_money, stock_present_price, stock_evaluation_profit_and_loss, stock_yield):
-        new_News = StockModel(stock_code, stock_name, '0', '0', '0', '0', '0', '-', '-', '0', '-', '0', '-')
+        new_News = StockModel(stock_code, stock_name, '0', '0', '0', '0', '0', '-', '-', '0', '-', '0', '-', self.caller.BUY_MINIMUM_COST_MANWON)
         self.my_stocks.insert(0, new_News)
         self.my_stocks[0].n_BUY_DONE = True
         self.my_stocks[0].bought(False, stock_buy_money, '-', '-', '-', stock_quantity, 0, 0, stock_buy_money, 0, stock_present_price, stock_evaluation_profit_and_loss, stock_yield, '정상')
@@ -83,7 +83,7 @@ class MyStock:
                 print(f'{common.getCurDateTime()}_[{self.name}][MyStock] add_or_update_stock, UPDATE: {stock_code}, {stock_name}, {stock_count}, {status}')
                 break
         if is_new:
-            new_News = StockModel(stock_code, stock_name, '0', '0', '0', '0', '0', '-', '-', '0', '-', '0', '-')
+            new_News = StockModel(stock_code, stock_name, '0', '0', '0', '0', '0', '-', '-', '0', '-', '0', '-', self.caller.self.BUY_MINIMUM_COST_MANWON)
             self.my_stocks.insert(0, new_News)
             self.my_stocks[0].bought(True, buy_cost, req_time, res_time, order_no, stock_count,
                                  stock_contractcount, stock_yet_count, buy_cost, cur_cost, profit, profit_per, broker,
@@ -151,9 +151,9 @@ class MyStock:
 
                         # SEC_WAIT_SELL_AFTER_BUY 초 이후부터 매도 시작
                         if (time.time() - model.firstbuytime) > self.caller.SEC_WAIT_SELL_AFTER_BUY:
-                            print(f'{common.getCurDateTime()}_[{self.name}][update_realtime_sise] 시세모니터(매도금지:{self.caller.SEC_WAIT_SELL_AFTER_BUY}), 코드: {stock_code}, 보유수량: {my_count}, 현재가: {model.cur_cost}, 평균가: {my_avg}, 세금: {my_tax}, 수수료: {my_commission}, 수익률: {my_profit_percent}, 익절커트라인: {self.caller.SELL_HIGH_CUTLINE_PERCENT}%, 손절커트라인: {self.caller.SELL_LOW_CUTLINE_PERCENT}%')
+                            print(f'{common.getCurDateTime()}_[{self.name}][update_realtime_sise] 시세모니터(매도가능:{self.caller.SEC_WAIT_SELL_AFTER_BUY}초), 코드: {stock_code}, 보유수량: {my_count}, 현재가: {model.cur_cost}, 평균가: {my_avg}, 세금: {my_tax}, 수수료: {my_commission}, 수익률: {my_profit_percent}, 익절커트라인: {self.caller.SELL_HIGH_CUTLINE_PERCENT}%, 손절커트라인: {self.caller.SELL_LOW_CUTLINE_PERCENT}%')
                         else:
-                            print(f'{common.getCurDateTime()}_[{self.name}][update_realtime_sise] 시세모니터(매도가능:{self.caller.SEC_WAIT_SELL_AFTER_BUY}), 코드: {stock_code}, 보유수량: {my_count}, 현재가: {model.cur_cost}, 평균가: {my_avg}, 세금: {my_tax}, 수수료: {my_commission}, 수익률: {my_profit_percent}, 익절커트라인: {self.caller.SELL_HIGH_CUTLINE_PERCENT}%, 손절커트라인: {self.caller.SELL_LOW_CUTLINE_PERCENT}%', file=self.caller.viLogFile)
+                            print(f'{common.getCurDateTime()}_[{self.name}][update_realtime_sise] 시세모니터(매도금지:{self.caller.SEC_WAIT_SELL_AFTER_BUY}초), 코드: {stock_code}, 보유수량: {my_count}, 현재가: {model.cur_cost}, 평균가: {my_avg}, 세금: {my_tax}, 수수료: {my_commission}, 수익률: {my_profit_percent}, 익절커트라인: {self.caller.SELL_HIGH_CUTLINE_PERCENT}%, 손절커트라인: {self.caller.SELL_LOW_CUTLINE_PERCENT}%', file=self.caller.viLogFile)
 
                         if (time.time() - model.firstbuytime) > self.caller.SEC_WAIT_SELL_AFTER_BUY:
                             # 매수 직후 오를 경우
@@ -308,8 +308,8 @@ class MyStock:
                                 item.setForeground(QtGui.QColor(0, 50, 250, 250))
                                 item.setBackground(QtGui.QColor(0, 0, 250, 25))
                             self.caller.tableWidget.setItem(row, self.caller.COL_CUR_PRICE, item)
-                            my_count = int(self.caller.tableWidget.item(row, self.caller.COL_NAME2).text())
-                            my_avg = int(self.caller.tableWidget.item(row, self.caller.COL_NAME4).text().replace(',', ''))
+                            my_count = int(self.caller.tableWidget.item(row, self.caller.COL_COUNT_BOUGHT).text())
+                            my_avg = int(self.caller.tableWidget.item(row, self.caller.COL_BUY_PRICE).text().replace(',', ''))
                             # 8 평가손익  현재가*보유량 - 매수가*보유량
                             tax = (abs(cur_cost) * my_count) * 0.0023
                             commission = (abs(cur_cost) * my_count) * 0.00015
@@ -344,7 +344,7 @@ class MyStock:
                                     item.setForeground(QtGui.QColor(0, 50, 250, 250))
                                     item.setBackground(QtGui.QColor(0, 0, 250, 25))
                             self.caller.tableWidget.setItem(row, self.caller.COL_PROFIT_PERCENT, item)
-                            self.caller.tableWidget.resizeRowsToContents()
+                            # self.caller.tableWidget.resizeRowsToContents()
                             break
                     except Exception as e:
                         print(f'{common.getCurDateTime()}_[{self.name}][update_realtime_sise] Exception on: {e}')
@@ -418,6 +418,14 @@ class MyStock:
             item = QTableWidgetItem('-%')
         self.caller.tableWidget.setItem(row, self.caller.COL_PROFIT_PERCENT, item)
         self.caller.tableWidget.setItem(row, self.caller.COL_STATUS, QTableWidgetItem(data.status))
+
+        self.caller.spinboxToBuy = QDoubleSpinBox()
+        self.caller.spinboxToBuy.setMinimum(10)
+        self.caller.spinboxToBuy.setMaximum(1000)
+        self.caller.spinboxToBuy.setSingleStep(10)
+        self.caller.spinboxToBuy.setValue(50)
+        self.caller.spinboxToBuy.valueChanged.connect(self.caller.spintoBuyClicked)
+        self.caller.tableWidget.setCellWidget(row, self.caller.COL_WON_TO_BUY, self.caller.spinboxToBuy)
 
         self.caller.buyBtn = QPushButton("매수")
         self.caller.buyBtn.clicked.connect(self.caller.buyClicked)
@@ -512,7 +520,7 @@ class MyStock:
                     button.setStyleSheet('background-color:rgb(%s,%s,%s);color:rgb(%s,%s,%s)' % (0, 50, 250, 255, 255, 255))
 
                 self.caller.tableWidget.setItem(row, self.caller.COL_STATUS, item)
-                self.caller.tableWidget.resizeRowsToContents()
+                # self.caller.tableWidget.resizeRowsToContents()
                 break
 
     def remove_from_stock_table(self, data):
