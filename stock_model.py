@@ -1,7 +1,7 @@
 import time
 
 class StockModel:
-    def __init__(self, code, codename, baldongprice, sigapercent, dongjeokprice, jeongjeokprice, gererayng, memetime, virelease, vibaldongcount, vigubun, vipoint, vitype, won_to_buy):
+    def __init__(self, code, codename, baldongprice, sigapercent, dongjeokprice, jeongjeokprice, dongjeok_gyeriyul, jeongjeok_gyeriyul, gererayng, memetime, virelease, vibaldongcount, vigubun, vipoint, vitype, won_to_buy):
         self.firstbuytime = time.time()
         self.ALLOW_AUTO_BUYSELL = True
         self.n_BUY_DONE = False
@@ -11,6 +11,9 @@ class StockModel:
         self.n_sigapercent = sigapercent
         self.n_dongjeokprice = dongjeokprice
         self.n_jeongjeokprice = jeongjeokprice
+        self.n_dongjeok_gyeriyul = dongjeok_gyeriyul
+        self.n_jeongjeok_gyeriyul = jeongjeok_gyeriyul
+
         self.n_gererayng = gererayng
         self.n_memetime = memetime
         self.n_virelease = virelease

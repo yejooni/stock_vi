@@ -275,7 +275,9 @@ class KiwoomAPI:
             baldongprice = self.GetCommRealData(code, 1221)
             sigapercent = self.GetCommRealData(code, 1489)
             dongjeokprice = self.GetCommRealData(code, 1237)
+            dongjeok_gyeriyul = self.GetCommRealData(code, 1239)
             jeongjeokprice = self.GetCommRealData(code, 1236)
+            jeongjeok_gyeriyul = self.GetCommRealData(code, 1238)
             gererayng = self.GetCommRealData(code, 13)
             memetime = self.GetCommRealData(code, 1223)
             vibaldongcount = self.GetCommRealData(code, 1490)
@@ -292,10 +294,10 @@ class KiwoomAPI:
                     break
             # 신규
             if is_new_news is True:
-                if '선물' in codename or '옵션' in codename or 'ETA' in codename or 'ETF' in codename or 'ETN' in codename:
+                if '아시아' in codename or 'EU' in codename or '채권' in codename or 'KOSPI' in codename or 'KODEX' in codename or '레버리지' in codename or '코스닥' in codename or '뉴딜' in codename or '국고채' in codename or '선물' in codename or '옵션' in codename or 'ETA' in codename or 'ETF' in codename or 'ETN' in codename:
                     pass
                 else:
-                    new_News = StockModel(code, codename, baldongprice, sigapercent, dongjeokprice, jeongjeokprice, gererayng, memetime, virelease, vibaldongcount, vigubun, vipoint, vitype, self.caller.BUY_MINIMUM_COST_MANWON)
+                    new_News = StockModel(code, codename, baldongprice, sigapercent, dongjeokprice, jeongjeokprice, dongjeok_gyeriyul, jeongjeok_gyeriyul, gererayng, memetime, virelease, vibaldongcount, vigubun, vipoint, vitype, self.caller.BUY_MINIMUM_COST_MANWON)
                     self.caller.MYSTOCK.my_stocks.insert(0, new_News)
                     print(f'{common.getCurDateTime()}_[{self.name}][receive_realdata][VI발동/해제][신규] 코드: {code}, 종목: {codename}, VI발동구분: {vigubun}, {type(vigubun)}, VI발동방향구분: {vipoint}, VI해제시각: {virelease}, VI적용구분: {vitype}')
                     # 실시간등록
@@ -315,27 +317,27 @@ class KiwoomAPI:
                         item.setBackground(QtGui.QColor(0, 0, 250, 25))
                     self.caller.tableWidget.setItem(row, self.caller.COL_SIGA_PERCENT, item)
 
-                    item = QTableWidgetItem(new_News.n_dongjeokprice)
-                    if int(new_News.n_dongjeokprice) > 0:
+                    item = QTableWidgetItem(new_News.n_dongjeokprice + "(" + new_News.n_dongjeok_gyeriyul + ")")
+                    if float(new_News.n_dongjeok_gyeriyul) > 0:
                         item.setForeground(QtGui.QColor(250, 50, 0, 250))
                         item.setBackground(QtGui.QColor(250, 0, 0, 25))
-                    elif int(new_News.n_dongjeokprice) < 0:
+                    elif float(new_News.n_dongjeok_gyeriyul) < 0:
                         item.setForeground(QtGui.QColor(0, 50, 250, 250))
                         item.setBackground(QtGui.QColor(0, 0, 250, 25))
                     self.caller.tableWidget.setItem(row, self.caller.COL_PRICE_DONGJEOK, item)
 
-                    item = QTableWidgetItem(new_News.n_jeongjeokprice)
-                    if int(new_News.n_jeongjeokprice) > 0:
+                    item = QTableWidgetItem(new_News.n_jeongjeokprice + "(" + new_News.n_jeongjeok_gyeriyul + ")")
+                    if float(new_News.n_jeongjeok_gyeriyul) > 0:
                         item.setForeground(QtGui.QColor(250, 50, 0, 250))
                         item.setBackground(QtGui.QColor(250, 0, 0, 25))
-                    elif int(new_News.n_jeongjeokprice) < 0:
+                    elif float(new_News.n_jeongjeok_gyeriyul) < 0:
                         item.setForeground(QtGui.QColor(0, 50, 250, 250))
                         item.setBackground(QtGui.QColor(0, 0, 250, 25))
                     self.caller.tableWidget.setItem(row, self.caller.COL_PRICE_JUNGJEOK, item)
 
                     self.caller.tableWidget.setItem(row, self.caller.COL_GERRERAYNG, QTableWidgetItem(new_News.n_gererayng))
-                    self.caller.tableWidget.setItem(row, self.caller.COL_BALDONG_TIME, QTableWidgetItem(new_News.n_memetime))
-                    self.caller.tableWidget.setItem(row, self.caller.COL_HEJI_TIME, QTableWidgetItem(new_News.n_virelease))
+                    self.caller.tableWidget.setItem(row, self.caller.COL_BALDONG_TIME, QTableWidgetItem(new_News.n_memetime[:2]+':'+new_News.n_memetime[2:4]+':'+new_News.n_memetime[4:6]))
+                    self.caller.tableWidget.setItem(row, self.caller.COL_HEJI_TIME, QTableWidgetItem(new_News.n_virelease[:2]+':'+new_News.n_virelease[2:4]+':'+new_News.n_virelease[4:6]))
 
                     self.caller.tableWidget.setItem(row, self.caller.COL_BALDONG_PRICE, QTableWidgetItem(new_News.n_baldongprice))
                     self.caller.tableWidget.setItem(row, self.caller.COL_HOGA, QTableWidgetItem('0'))
@@ -349,6 +351,14 @@ class KiwoomAPI:
                     self.caller.tableWidget.setItem(row, self.caller.COL_PROFIT_PRICE, QTableWidgetItem('0'))
                     self.caller.tableWidget.setItem(row, self.caller.COL_PROFIT_PERCENT, QTableWidgetItem('0'))
                     self.caller.tableWidget.setItem(row, self.caller.COL_STATUS, QTableWidgetItem('VI발동'))
+
+                    self.caller.spinboxToBuy = QDoubleSpinBox()
+                    self.caller.spinboxToBuy.setMinimum(10)
+                    self.caller.spinboxToBuy.setMaximum(1000)
+                    self.caller.spinboxToBuy.setSingleStep(10)
+                    self.caller.spinboxToBuy.setValue(50)
+                    self.caller.spinboxToBuy.valueChanged.connect(self.caller.spintoBuyClicked)
+                    self.caller.tableWidget.setCellWidget(row, self.caller.COL_WON_TO_BUY, self.caller.spinboxToBuy)
 
                     self.caller.buyBtn = QPushButton("매수")
                     self.caller.buyBtn.clicked.connect(self.caller.buyClicked)
@@ -365,7 +375,7 @@ class KiwoomAPI:
                     self.caller.sellAllBtn.setStyleSheet('background-color:rgb(%s,%s,%s);color:rgb(%s,%s,%s)' % (0, 50, 250, 255, 255, 255))
                     self.caller.tableWidget.setCellWidget(row, self.caller.COL_BTN_MEDO100, self.caller.sellAllBtn)
 
-                    if vipoint == 2:
+                    if vipoint == '2':
                         new_News.ALLOW_AUTO_BUYSELL = False
                         self.caller.authBtn = QPushButton("중지")
                         self.caller.authBtn.clicked.connect(self.caller.autoClicked)
@@ -424,9 +434,9 @@ class KiwoomAPI:
                     self.caller.tableWidget.setItem(vi_index, self.caller.COL_PRICE_JUNGJEOK, item)
 
                     self.caller.tableWidget.setItem(vi_index, self.caller.COL_GERRERAYNG, QTableWidgetItem(gererayng))
-                    self.caller.tableWidget.setItem(vi_index, self.caller.COL_BALDONG_TIME, QTableWidgetItem(memetime))
+                    self.caller.tableWidget.setItem(vi_index, self.caller.COL_BALDONG_TIME, QTableWidgetItem(memetime[:2]+':'+memetime[2:4]+':'+memetime[4:6]))
 
-                    item = QTableWidgetItem(virelease)
+                    item = QTableWidgetItem(virelease[:2]+':'+virelease[2:4]+':'+virelease[4:6])
                     item.setForeground(QtGui.QColor(250, 50, 0, 250))
                     item.setBackground(QtGui.QColor(250, 0, 0, 25))
                     self.caller.tableWidget.setItem(vi_index, self.caller.COL_HEJI_TIME, item)

@@ -17,7 +17,7 @@ class MyStock:
 
     # 계좌평가잔고내역요청
     def add_stock_from_account(self, stock_code, stock_name, stock_quantity, stock_buy_money, stock_present_price, stock_evaluation_profit_and_loss, stock_yield):
-        new_News = StockModel(stock_code, stock_name, '0', '0', '0', '0', '0', '-', '-', '0', '-', '0', '-', self.caller.BUY_MINIMUM_COST_MANWON)
+        new_News = StockModel(stock_code, stock_name, '0', '0', '0', '0', '0', '0', '0', '-', '-', '0', '-', '0', '-', self.caller.BUY_MINIMUM_COST_MANWON)
         self.my_stocks.insert(0, new_News)
         self.my_stocks[0].n_BUY_DONE = True
         self.my_stocks[0].bought(False, stock_buy_money, '-', '-', '-', stock_quantity, 0, 0, stock_buy_money, 0, stock_present_price, stock_evaluation_profit_and_loss, stock_yield, '정상')
@@ -83,7 +83,7 @@ class MyStock:
                 print(f'{common.getCurDateTime()}_[{self.name}][MyStock] add_or_update_stock, UPDATE: {stock_code}, {stock_name}, {stock_count}, {status}')
                 break
         if is_new:
-            new_News = StockModel(stock_code, stock_name, '0', '0', '0', '0', '0', '-', '-', '0', '-', '0', '-', self.caller.self.BUY_MINIMUM_COST_MANWON)
+            new_News = StockModel(stock_code, stock_name, '0', '0', '0', '0', '0', '0', '0', '-', '-', '0', '-', '0', '-', self.caller.BUY_MINIMUM_COST_MANWON)
             self.my_stocks.insert(0, new_News)
             self.my_stocks[0].bought(True, buy_cost, req_time, res_time, order_no, stock_count,
                                  stock_contractcount, stock_yet_count, buy_cost, cur_cost, profit, profit_per, broker,

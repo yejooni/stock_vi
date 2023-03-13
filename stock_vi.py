@@ -423,8 +423,8 @@ class MainWindow(QMainWindow):
         self.tableWidget.setColumnWidth(self.COL_CODE, 50)
         self.tableWidget.setColumnWidth(self.COL_NAME, 100)
         self.tableWidget.setColumnWidth(self.COL_SIGA_PERCENT, 60)
-        self.tableWidget.setColumnWidth(self.COL_PRICE_DONGJEOK, 60)
-        self.tableWidget.setColumnWidth(self.COL_PRICE_JUNGJEOK, 60)
+        self.tableWidget.setColumnWidth(self.COL_PRICE_DONGJEOK, 80)
+        self.tableWidget.setColumnWidth(self.COL_PRICE_JUNGJEOK, 80)
         self.tableWidget.setColumnWidth(self.COL_GERRERAYNG, 60)
         self.tableWidget.setColumnWidth(self.COL_BALDONG_TIME, 60)
         self.tableWidget.setColumnWidth(self.COL_HEJI_TIME, 60)
@@ -737,7 +737,7 @@ class MainWindow(QMainWindow):
         cur_quantity = int(self.tableWidget.item(item.row(), self.COL_COUNT_BOUGHT).text())
         status = self.tableWidget.item(item.row(), self.COL_STATUS).text()
         hoga = common.convertStringMoneyToInt(self.tableWidget.item(item.row(), self.COL_HOGA).text().split('(')[0])
-        minimum_manwon = int(self.tableWidget.item(item.row(), self.COL_WON_TO_BUY).text())
+        minimum_manwon = int(self.tableWidget.cellWidget(item.row(), self.COL_WON_TO_BUY).value())
         minimum_won = minimum_manwon * 10000
         print(f'{common.getCurDateTime()}_[{self.NAME}][buyClicked] minimum_manwon: {minimum_manwon}, minimum_won: {minimum_won}')
         try:
