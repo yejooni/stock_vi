@@ -87,7 +87,7 @@ class MyStock:
             self.my_stocks.insert(0, new_News)
             self.my_stocks[0].bought(True, buy_cost, req_time, res_time, order_no, stock_count,
                                  stock_contractcount, stock_yet_count, buy_cost, cur_cost, profit, profit_per, broker,
-                                 status)
+                                 status, 0)
             self.insert_to_stock_table(self.my_stocks[0])
 
             print(f'{common.getCurDateTime()}_[{self.name}][MyStock] add_or_update_stock, NEW: {stock_code}, {stock_name}, {stock_count}, {status}')

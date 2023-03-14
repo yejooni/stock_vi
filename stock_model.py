@@ -21,6 +21,8 @@ class StockModel:
         self.n_vigubun = vigubun
         self.n_vipoint = vipoint
         self.n_vitype = vitype
+
+        self.n_viheje_sichoga = 0
         self.firstbuy_price = '0'
         self.req_time = '-'
         self.res_time = '-'

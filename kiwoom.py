@@ -211,10 +211,17 @@ class KiwoomAPI:
                 if self.caller.MYSTOCK.my_stocks[idx].n_code == code:
                     # print(f'{common.getCurDateTime()}_[{self.name}][receive_realdata][매수콜] code: {code}, n_BUY_DONE: {self.caller.MYSTOCK.my_stocks[idx].n_BUY_DONE}, ALLOW_AUTO_BUYSELL: {self.caller.MYSTOCK.my_stocks[idx].ALLOW_AUTO_BUYSELL}, first_medo_hoga: {first_medo_hoga}, n_baldongprice: {self.caller.MYSTOCK.my_stocks[idx].n_baldongprice}, BUY_MINIMUM_COST_WON: {self.caller.BUY_MINIMUM_COST_WON}, n_gererayng: {self.caller.MYSTOCK.my_stocks[idx].n_gererayng}, mesuvi_type: {self.caller.mesuvi_type}, n_vipoint: {self.caller.MYSTOCK.my_stocks[idx].n_vipoint}')
                     if self.caller.MYSTOCK.my_stocks[idx].n_BUY_DONE is False:
-                        # 조건 맞으면 첫 매수
+                        # 조건 맞으면 매수
                         if self.caller.MYSTOCK.my_stocks[idx].ALLOW_AUTO_BUYSELL:
-                            if common.convertStringMoneyToInt(first_medo_hoga) >= int(self.caller.MYSTOCK.my_stocks[idx].n_baldongprice) \
-                                    and int(self.caller.MYSTOCK.my_stocks[idx].n_gererayng) >= int(self.caller.BUY_MIN_GERERYANG):
+                            vi_heje_sichoga_start_percent = (self.caller.BUY_START_PERCENT / 100) + 1
+                            # 해제 직후 시초가 지정
+                            first_medo_hoga_int = common.convertStringMoneyToInt(first_medo_hoga)
+                            if self.caller.MYSTOCK.my_stocks[idx].n_viheje_sichoga == 0:
+                                self.caller.MYSTOCK.my_stocks[idx].n_viheje_sichoga = first_medo_hoga_int
+                            buy_minimum_limit_price = self.caller.MYSTOCK.my_stocks[idx].n_viheje_sichoga * vi_heje_sichoga_start_percent
+                            vi_baldongga_int = int(self.caller.MYSTOCK.my_stocks[idx].n_baldongprice)
+                            gererayng = int(self.caller.MYSTOCK.my_stocks[idx].n_gererayng)
+                            if buy_minimum_limit_price >= first_medo_hoga_int and first_medo_hoga_int >= vi_baldongga_int and gererayng >= int(self.caller.BUY_MIN_GERERYANG):
                                 self.caller.MYSTOCK.my_stocks[idx].firstbuytime = time.time()
                                 buy = False
                                 if self.caller.mesuvi_type == 2 and self.caller.MYSTOCK.my_stocks[idx].n_vipoint == '1': # 상승만

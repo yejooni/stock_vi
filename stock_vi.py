@@ -36,6 +36,7 @@ class MainWindow(QMainWindow):
         self.STOCK_REAL_BUY_STARTED = False
 
         self.NAME = "StockVI"
+        self.BUY_START_PERCENT = 1
         self.SELL_LOW_CUTLINE_PERCENT = -1
         self.SELL_HIGH_CUTLINE_PERCENT = 2
         self.SELL_CUTLINE_TIMESEC = 300
@@ -275,6 +276,7 @@ class MainWindow(QMainWindow):
         print(f'{common.getCurDateTime()}_[{self.NAME}][saveOptionFile] {self.BUY_PROFIT_PERCENT}')
         print(f'{common.getCurDateTime()}_[{self.NAME}][saveOptionFile] {self.mesuvi_type}')
         print(f'{common.getCurDateTime()}_[{self.NAME}][saveOptionFile] {self.SEC_WAIT_SELL_AFTER_BUY}')
+        print(f'{common.getCurDateTime()}_[{self.NAME}][saveOptionFile] {self.BUY_START_PERCENT}')
         f.write(f'{self.SELL_LOW_CUTLINE_PERCENT}\n')
         f.write(f'{self.SELL_HIGH_CUTLINE_PERCENT}\n')
         f.write(f'{self.SELL_CUTLINE_TIMESEC}\n')
@@ -283,6 +285,7 @@ class MainWindow(QMainWindow):
         f.write(f'{self.BUY_PROFIT_PERCENT}\n')
         f.write(f'{self.mesuvi_type}\n')
         f.write(f'{self.SEC_WAIT_SELL_AFTER_BUY}\n')
+        f.write(f'{self.BUY_START_PERCENT}\n')
         f.close()
 
     def openOptionFile(self):
@@ -308,6 +311,8 @@ class MainWindow(QMainWindow):
                 self.mesuvi_type = int(nline)
             elif idx == 7:
                 self.SEC_WAIT_SELL_AFTER_BUY = int(nline)
+            elif idx == 8:
+                self.BUY_START_PERCENT = float(nline)
         f.close()
 
     def btnServiceStartClicked(self):
@@ -518,6 +523,14 @@ class MainWindow(QMainWindow):
         return tab
 
     def buytab2_1(self):
+        self.spinboxBuyPercentLabel = QLabel('VI해제 시초가 대비 x% 이상 오를 때 구매')
+        self.spinboxBuyPercentLimit = QDoubleSpinBox()
+        self.spinboxBuyPercentLimit.setMinimum(0.0)
+        self.spinboxBuyPercentLimit.setMaximum(10)
+        self.spinboxBuyPercentLimit.setSingleStep(0.1)
+        self.spinboxBuyPercentLimit.valueChanged.connect(self.buyPercentChanged)
+        self.spinboxBuyPercentLimit.setValue(self.BUY_START_PERCENT)
+
         self.spinboxLowLimitLabel = QLabel('손절 퍼센트(%) - 이하 시 전량 매도')
         self.spinboxLowLimit = QDoubleSpinBox()
         self.spinboxLowLimit.setMinimum(-10)
@@ -543,6 +556,8 @@ class MainWindow(QMainWindow):
         self.spinboxSellTime.setValue(self.SELL_CUTLINE_TIMESEC)
 
         vbox = QVBoxLayout()
+        vbox.addWidget(self.spinboxBuyPercentLabel)
+        vbox.addWidget(self.spinboxBuyPercentLimit)
         vbox.addWidget(self.spinboxLowLimitLabel)
         vbox.addWidget(self.spinboxLowLimit)
         vbox.addWidget(self.spinboxHighLimitLabel)
@@ -553,6 +568,12 @@ class MainWindow(QMainWindow):
         buytab2_1 = QWidget()
         buytab2_1.setLayout(vbox)
         return buytab2_1
+
+    def buyPercentChanged(self):
+        self.BUY_START_PERCENT = self.spinboxBuyPercentLimit.value()
+        print(f'{common.getCurDateTime()}_[{self.NAME}][buyPercentChanged] {self.BUY_START_PERCENT} {type(self.BUY_START_PERCENT)}')
+        self.saveOptionFile()
+
     def lowLimitChanged(self):
         self.SELL_LOW_CUTLINE_PERCENT = self.spinboxLowLimit.value()
         print(f'{common.getCurDateTime()}_[{self.NAME}][lowLimitChanged] {self.SELL_LOW_CUTLINE_PERCENT} {type(self.SELL_LOW_CUTLINE_PERCENT)}')
