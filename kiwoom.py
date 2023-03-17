@@ -213,7 +213,7 @@ class KiwoomAPI:
                     if self.caller.MYSTOCK.my_stocks[idx].n_BUY_DONE is False:
                         # 조건 맞으면 매수
                         if self.caller.MYSTOCK.my_stocks[idx].ALLOW_AUTO_BUYSELL:
-                            vi_heje_sichoga_start_percent = (self.caller.BUY_START_PERCENT / 100) + 1
+                            vi_heje_sichoga_start_percent = float(self.caller.BUY_START_PERCENT / 100) + 1
                             # 해제 직후 시초가 지정
                             first_medo_hoga_int = common.convertStringMoneyToInt(first_medo_hoga)
                             if self.caller.MYSTOCK.my_stocks[idx].n_viheje_sichoga == 0:
@@ -221,7 +221,7 @@ class KiwoomAPI:
                             buy_minimum_limit_price = self.caller.MYSTOCK.my_stocks[idx].n_viheje_sichoga * vi_heje_sichoga_start_percent
                             vi_baldongga_int = int(self.caller.MYSTOCK.my_stocks[idx].n_baldongprice)
                             gererayng = int(self.caller.MYSTOCK.my_stocks[idx].n_gererayng)
-                            if buy_minimum_limit_price >= first_medo_hoga_int and first_medo_hoga_int >= vi_baldongga_int and gererayng >= int(self.caller.BUY_MIN_GERERYANG):
+                            if buy_minimum_limit_price <= first_medo_hoga_int and first_medo_hoga_int >= vi_baldongga_int and gererayng >= int(self.caller.BUY_MIN_GERERYANG):
                                 self.caller.MYSTOCK.my_stocks[idx].firstbuytime = time.time()
                                 buy = False
                                 if self.caller.mesuvi_type == 2 and self.caller.MYSTOCK.my_stocks[idx].n_vipoint == '1': # 상승만
